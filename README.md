@@ -231,4 +231,3 @@ The role assignment request body follows this structure:
 
 - [Microsoft Graph API Documentation](https://docs.microsoft.com/en-us/graph/)
 - [Azure AD Role Management](https://docs.microsoft.com/en-us/graph/api/resources/unifiedroleassignment)
-- [SGNL Job Service Documentation](https://github.com/SGNL-ai/job_service)
