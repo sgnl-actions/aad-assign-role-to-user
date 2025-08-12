@@ -1,37 +1,51 @@
-name: job-template
-description: Template for SGNL JavaScript jobs - replace with your job description
+name: aad-assign-role-to-user
+description: Assign a directory role to a user in Azure Active Directory
 
 # Input parameters for web form generation
 inputs:
-  target:
+  userPrincipalName:
     type: text
-    description: Target resource identifier (e.g., user email, group ID)
+    description: User principal name (UPN) of the user to assign the role to
     required: true
     validation:
       min: 1
-      max: 100
+      max: 256
 
-  action:
+  roleId:
     type: text
-    description: Action to perform on the target resource
+    description: Directory role ID to assign to the user
     required: true
     validation:
       min: 1
-      max: 50
+      max: 36
 
-  options:
-    type: array
-    description: Additional options for the operation
+  directoryScopeId:
+    type: text
+    description: Directory scope ID for the role assignment
     required: false
-    item_type: text
+    default: "/"
     validation:
-      max: 10
+      min: 1
+      max: 256
 
-  dry_run:
-    type: boolean
-    description: Preview changes without executing them
+  justification:
+    type: text
+    description: Justification for the role assignment
     required: false
-    default: false
+    default: "Approved by SGNL.ai"
+    validation:
+      min: 1
+      max: 512
+
+# Required secrets from Azure AD
+secrets:
+  AZURE_AD_TOKEN:
+    description: Azure AD access token with Directory.ReadWrite.All permissions
+
+# Required environment variables
+environment:
+  AZURE_AD_TENANT_URL:
+    description: Azure AD tenant URL (e.g., https://graph.microsoft.com)
 
 # Expected output structure
 outputs:
@@ -39,10 +53,18 @@ outputs:
     type: text
     description: Operation result (success, failed, recovered, etc.)
 
-  target:
+  userPrincipalName:
     type: text
-    description: The target resource that was processed
+    description: User principal name that was processed
 
-  processed_at:
-    type: datetime
-    description: When the operation completed (ISO 8601)
+  roleId:
+    type: text
+    description: Role ID that was assigned
+
+  userId:
+    type: text
+    description: User's directory object ID
+
+  requestId:
+    type: text
+    description: Role assignment request ID

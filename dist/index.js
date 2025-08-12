@@ -2,100 +2,196 @@
 'use strict';
 
 /**
- * SGNL Job Template
+ * Azure AD Assign Role to User Action
  *
- * This template provides a starting point for implementing SGNL jobs.
- * Replace this implementation with your specific business logic.
+ * Assigns a directory role to a user in Azure Active Directory using a two-step process:
+ * 1. Get user's directory object ID by user principal name
+ * 2. Create role assignment schedule request for permanent role assignment
  */
+
+/**
+ * Helper function to get user by UPN and assign role
+ * @param {string} userPrincipalName - User principal name
+ * @param {string} roleId - Role definition ID
+ * @param {string} directoryScopeId - Directory scope ID
+ * @param {string} justification - Justification for assignment
+ * @param {string} tenantUrl - Azure AD tenant URL
+ * @param {string} authToken - Azure AD access token
+ * @returns {Promise<Object>} API response
+ */
+async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, justification, tenantUrl, authToken) {
+  // Step 1: Get user by UPN to retrieve their directory object ID
+  const encodedUPN = encodeURIComponent(userPrincipalName);
+  const getUserUrl = new URL(`/v1.0/users/${encodedUPN}`, tenantUrl);
+
+  const getUserResponse = await fetch(getUserUrl.toString(), {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!getUserResponse.ok) {
+    throw new Error(`Failed to get user ${userPrincipalName}: ${getUserResponse.status} ${getUserResponse.statusText}`);
+  }
+
+  const userData = await getUserResponse.json();
+  const userId = userData.id;
+
+  // Step 2: Create role assignment schedule request
+  const assignRoleUrl = new URL('/v1.0/roleManagement/directory/roleAssignmentScheduleRequests', tenantUrl);
+
+  const roleAssignmentRequest = {
+    action: 'adminAssign',
+    justification: justification,
+    roleDefinitionId: roleId,
+    directoryScopeId: directoryScopeId,
+    principalId: userId,
+    scheduleInfo: {
+      startDateTime: new Date().toISOString(),
+      expiration: {
+        type: 'NoExpiration'
+      }
+    }
+  };
+
+  const assignRoleResponse = await fetch(assignRoleUrl.toString(), {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(roleAssignmentRequest)
+  });
+
+  if (!assignRoleResponse.ok) {
+    throw new Error(`Failed to assign role ${roleId} to user ${userPrincipalName}: ${assignRoleResponse.status} ${assignRoleResponse.statusText}`);
+  }
+
+  const assignmentData = await assignRoleResponse.json();
+
+  return {
+    userId,
+    requestId: assignmentData.id,
+    assignmentData
+  };
+}
 
 var script = {
   /**
-   * Main execution handler - implement your job logic here
+   * Main execution handler - assigns role to user
    * @param {Object} params - Job input parameters
+   * @param {string} params.userPrincipalName - User principal name
+   * @param {string} params.roleId - Role definition ID
+   * @param {string} params.directoryScopeId - Directory scope ID (default: "/")
+   * @param {string} params.justification - Justification for assignment (default: "Approved by SGNL.ai")
    * @param {Object} context - Execution context with env, secrets, outputs
-   * @returns {Object} Job results
+   * @returns {Object} Assignment results
    */
   invoke: async (params, context) => {
-    console.log('Starting job execution');
-    console.log(`Processing target: ${params.target}`);
-    console.log(`Action: ${params.action}`);
+    console.log('Starting Azure AD role assignment');
 
-    // TODO: Replace with your implementation
-    const { target, action, options = [], dry_run = false } = params;
-
-    if (dry_run) {
-      console.log('DRY RUN: No changes will be made');
+    // Validate required parameters
+    if (!params.userPrincipalName) {
+      throw new Error('userPrincipalName is required');
     }
 
-    // Access environment variables
-    const environment = context.env.ENVIRONMENT || 'development';
-    console.log(`Running in ${environment} environment`);
-
-    // Access secrets securely (example)
-    if (context.secrets.API_KEY) {
-      console.log(`Using API key ending in ...${context.secrets.API_KEY.slice(-4)}`);
+    if (!params.roleId) {
+      throw new Error('roleId is required');
     }
 
-    // Use outputs from previous jobs in workflow
-    if (context.outputs && Object.keys(context.outputs).length > 0) {
-      console.log(`Available outputs from ${Object.keys(context.outputs).length} previous jobs`);
-      console.log(`Previous job outputs: ${Object.keys(context.outputs).join(', ')}`);
+    // Extract parameters with defaults
+    const {
+      userPrincipalName,
+      roleId,
+      directoryScopeId = '/',
+      justification = 'Approved by SGNL.ai'
+    } = params;
+
+    // Validate required environment and secrets
+    if (!context.environment.AZURE_AD_TENANT_URL) {
+      throw new Error('AZURE_AD_TENANT_URL environment variable is required');
     }
 
-    // TODO: Implement your business logic here
-    console.log(`Performing ${action} on ${target}...`);
-
-    if (options.length > 0) {
-      console.log(`Processing ${options.length} options: ${options.join(', ')}`);
+    if (!context.secrets.AZURE_AD_TOKEN) {
+      throw new Error('AZURE_AD_TOKEN secret is required');
     }
 
-    console.log(`Successfully completed ${action} on ${target}`);
+    const tenantUrl = context.environment.AZURE_AD_TENANT_URL;
+    const authToken = context.secrets.AZURE_AD_TOKEN;
 
-    // Return structured results
-    return {
-      status: dry_run ? 'dry_run_completed' : 'success',
-      target: target,
-      action: action,
-      options_processed: options.length,
-      environment: environment,
-      processed_at: new Date().toISOString()
-      // Job completed successfully
-    };
+    console.log(`Assigning role ${roleId} to user ${userPrincipalName} with scope ${directoryScopeId}`);
+
+    try {
+      const result = await assignRoleToUser(
+        userPrincipalName,
+        roleId,
+        directoryScopeId,
+        justification,
+        tenantUrl,
+        authToken
+      );
+
+      console.log(`Successfully assigned role to user. Request ID: ${result.requestId}`);
+
+      return {
+        status: 'success',
+        userPrincipalName,
+        roleId,
+        userId: result.userId,
+        requestId: result.requestId
+      };
+    } catch (error) {
+      console.error(`Failed to assign role: ${error.message}`);
+      throw error;
+    }
   },
 
   /**
-   * Error recovery handler - implement error handling logic
+   * Error recovery handler - handles retryable errors
    * @param {Object} params - Original params plus error information
    * @param {Object} context - Execution context
    * @returns {Object} Recovery results
    */
   error: async (params, _context) => {
-    const { error, target } = params;
-    console.error(`Job encountered error while processing ${target}: ${error.message}`);
+    const { error } = params;
+    console.error(`Role assignment encountered error: ${error.message}`);
 
-    // TODO: Implement your error recovery logic
-    // Example: Check if error is retryable and attempt recovery
+    // Check if error is retryable
+    if (error.message.includes('429') || // Rate limited
+        error.message.includes('502') || // Bad gateway
+        error.message.includes('503') || // Service unavailable
+        error.message.includes('504')) { // Gateway timeout
+      console.log('Detected retryable error, waiting before retry...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      return { status: 'retry_requested' };
+    }
 
-    // For now, just throw the error - implement your logic here
-    throw new Error(`Unable to recover from error: ${error.message}`);
+    // Mark authentication/authorization errors as fatal
+    if (error.message.includes('401') || error.message.includes('403')) {
+      console.error('Authentication/authorization error - not retrying');
+      throw error;
+    }
+
+    // Default: let framework handle retry
+    return { status: 'retry_requested' };
   },
 
   /**
-   * Graceful shutdown handler - implement cleanup logic
+   * Graceful shutdown handler - performs cleanup
    * @param {Object} params - Original params plus halt reason
    * @param {Object} context - Execution context
    * @returns {Object} Cleanup results
    */
   halt: async (params, _context) => {
-    const { reason, target } = params;
-    console.log(`Job is being halted (${reason}) while processing ${target}`);
-
-    // TODO: Implement your cleanup logic
-    // Example: Save partial results, close connections, etc.
+    const { reason } = params;
+    console.log(`Role assignment is being halted: ${reason}`);
 
     return {
       status: 'halted',
-      target: target || 'unknown',
       reason: reason,
       halted_at: new Date().toISOString()
     };
