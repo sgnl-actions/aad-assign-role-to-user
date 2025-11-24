@@ -29,7 +29,7 @@ The Azure AD application or service principal must have:
 
 | Name | Description | Required |
 |------|-------------|----------|
-| `AZURE_AD_TOKEN` | Azure AD access token with Directory.ReadWrite.All permissions | Yes |
+| `BEARER_AUTH_TOKEN` | Bearer token for Azure AD API authentication | Yes |
 
 ### Environment Variables
 
