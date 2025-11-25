@@ -12,16 +12,19 @@
  * @param {string} roleId - Role definition ID
  * @param {string} directoryScopeId - Directory scope ID
  * @param {string} justification - Justification for assignment
- * @param {string} tenantUrl - Azure AD tenant URL
- * @param {string} authToken - Azure AD access token
+ * @param {string} address - Azure AD base URL
+ * @param {string} authToken - Bearer authentication token
  * @returns {Promise<Object>} API response
  */
-async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, justification, tenantUrl, authToken) {
+async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, justification, address, authToken) {
+  // Remove trailing slash from address if present
+  const cleanAddress = address.endsWith('/') ? address.slice(0, -1) : address;
+
   // Step 1: Get user by UPN to retrieve their directory object ID
   const encodedUPN = encodeURIComponent(userPrincipalName);
-  const getUserUrl = new URL(`/v1.0/users/${encodedUPN}`, tenantUrl);
+  const getUserUrl = `${cleanAddress}/v1.0/users/${encodedUPN}`;
 
-  const getUserResponse = await fetch(getUserUrl.toString(), {
+  const getUserResponse = await fetch(getUserUrl, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${authToken}`,
@@ -38,7 +41,7 @@ async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, jus
   const userId = userData.id;
 
   // Step 2: Create role assignment schedule request
-  const assignRoleUrl = new URL('/v1.0/roleManagement/directory/roleAssignmentScheduleRequests', tenantUrl);
+  const assignRoleUrl = `${cleanAddress}/v1.0/roleManagement/directory/roleAssignmentScheduleRequests`;
 
   const roleAssignmentRequest = {
     action: 'adminAssign',
@@ -54,7 +57,7 @@ async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, jus
     }
   };
 
-  const assignRoleResponse = await fetch(assignRoleUrl.toString(), {
+  const assignRoleResponse = await fetch(assignRoleUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${authToken}`,
@@ -85,7 +88,9 @@ export default {
    * @param {string} params.roleId - Role definition ID
    * @param {string} params.directoryScopeId - Directory scope ID (default: "/")
    * @param {string} params.justification - Justification for assignment (default: "Approved by SGNL.ai")
+   * @param {string} params.address - The Azure AD API base URL (e.g., https://graph.microsoft.com)
    * @param {Object} context - Execution context with env, secrets, outputs
+   * @param {string} context.environment.ADDRESS - Default Azure AD API base URL
    * @param {string} context.secrets.BEARER_AUTH_TOKEN - Bearer token for Azure AD API authentication
    * @returns {Object} Assignment results
    */
@@ -109,16 +114,16 @@ export default {
       justification = 'Approved by SGNL.ai'
     } = params;
 
-    // Validate required environment and secrets
-    if (!context.environment.AZURE_AD_TENANT_URL) {
-      throw new Error('AZURE_AD_TENANT_URL environment variable is required');
+    // Determine the URL to use
+    const address = params.address || context.environment?.ADDRESS;
+    if (!address) {
+      throw new Error('No URL specified. Provide either address parameter or ADDRESS environment variable');
     }
 
     if (!context.secrets.BEARER_AUTH_TOKEN) {
       throw new Error('BEARER_AUTH_TOKEN secret is required');
     }
 
-    const tenantUrl = context.environment.AZURE_AD_TENANT_URL;
     const authToken = context.secrets.BEARER_AUTH_TOKEN;
 
     console.log(`Assigning role ${roleId} to user ${userPrincipalName} with scope ${directoryScopeId}`);
@@ -129,7 +134,7 @@ export default {
         roleId,
         directoryScopeId,
         justification,
-        tenantUrl,
+        address,
         authToken
       );
 
