@@ -88,9 +88,8 @@ export default {
    * @param {string} params.roleId - Role definition ID
    * @param {string} params.directoryScopeId - Directory scope ID (default: "/")
    * @param {string} params.justification - Justification for assignment (default: "Approved by SGNL.ai")
-   * @param {string} params.address - The Azure AD API base URL (e.g., https://graph.microsoft.com)
    * @param {Object} context - Execution context with env, secrets, outputs
-   * @param {string} context.environment.ADDRESS - Default Azure AD API base URL
+   * @param {string} context.environment.ADDRESS - Azure AD API base URL
    * @param {string} context.secrets.BEARER_AUTH_TOKEN - Bearer token for Azure AD API authentication
    * @returns {Object} Assignment results
    */
@@ -114,16 +113,16 @@ export default {
       justification = 'Approved by SGNL.ai'
     } = params;
 
-    // Determine the URL to use
-    const address = params.address || context.environment?.ADDRESS;
-    if (!address) {
-      throw new Error('No URL specified. Provide either address parameter or ADDRESS environment variable');
+    // Validate ADDRESS environment variable
+    if (!context.environment?.ADDRESS) {
+      throw new Error('ADDRESS environment variable is required');
     }
 
     if (!context.secrets.BEARER_AUTH_TOKEN) {
       throw new Error('BEARER_AUTH_TOKEN secret is required');
     }
 
+    const address = context.environment.ADDRESS;
     const authToken = context.secrets.BEARER_AUTH_TOKEN;
 
     console.log(`Assigning role ${roleId} to user ${userPrincipalName} with scope ${directoryScopeId}`);
