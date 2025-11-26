@@ -25,17 +25,42 @@ The Azure AD application or service principal must have:
 
 ## Configuration
 
-### Secrets
+### Authentication
 
-| Name | Description | Required |
-|------|-------------|----------|
-| `BEARER_AUTH_TOKEN` | Bearer token for Azure AD API authentication | Yes |
+This action supports two OAuth2 authentication methods:
 
-### Environment Variables
+#### OAuth2 Authorization Code Flow
 
-| Name | Description | Required | Default |
-|------|-------------|----------|---------|
-| `AZURE_AD_TENANT_URL` | Azure AD tenant URL (e.g., https://graph.microsoft.com) | Yes | None |
+**Required Secrets:**
+- **`OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN`**: OAuth2 access token
+
+**Required Environment Variables:**
+- **`OAUTH2_AUTHORIZATION_CODE_CLIENT_ID`**: OAuth2 client ID
+- **`OAUTH2_AUTHORIZATION_CODE_TOKEN_URL`**: Token endpoint URL
+
+**Optional Environment Variables:**
+- **`OAUTH2_AUTHORIZATION_CODE_AUTH_STYLE`**: Authentication style (`InHeader`, `InParams`, or `AutoDetect`)
+- **`OAUTH2_AUTHORIZATION_CODE_AUTH_URL`**: Authorization endpoint URL
+- **`OAUTH2_AUTHORIZATION_CODE_SCOPE`**: OAuth2 scope
+- **`OAUTH2_AUTHORIZATION_CODE_REDIRECT_URI`**: OAuth2 redirect URI
+
+#### OAuth2 Client Credentials Flow
+
+**Required Secrets:**
+- **`OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET`**: OAuth2 client secret
+
+**Required Environment Variables:**
+- **`OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL`**: Token endpoint URL
+- **`OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID`**: OAuth2 client ID
+
+**Optional Environment Variables:**
+- **`OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE`**: Authentication style (`InHeader`, `InParams`, or `AutoDetect`)
+- **`OAUTH2_CLIENT_CREDENTIALS_SCOPE`**: OAuth2 scope
+- **`OAUTH2_CLIENT_CREDENTIALS_AUDIENCE`**: OAuth2 audience
+
+### Required Environment Variables
+
+- **`ADDRESS`**: Azure AD API base URL (e.g., `https://graph.microsoft.com`)
 
 ### Input Parameters
 
@@ -147,8 +172,8 @@ For integration testing with a real Azure AD tenant:
 4. Set environment variables and run tests
 
 ```bash
-export AZURE_AD_TENANT_URL="https://graph.microsoft.com"
-export AZURE_AD_TOKEN="your-access-token"
+export ADDRESS="https://graph.microsoft.com"
+export OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN="your-access-token"
 npm run dev
 ```
 
