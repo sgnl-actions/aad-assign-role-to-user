@@ -7,10 +7,10 @@ global.fetch = jest.fn();
 describe('Azure AD Assign Role to User Script', () => {
   const mockContext = {
     environment: {
-      AZURE_AD_TENANT_URL: 'https://graph.microsoft.com'
+      ADDRESS: 'https://graph.microsoft.com'
     },
     secrets: {
-      BEARER_AUTH_TOKEN: 'mock-access-token'
+      OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN: 'mock-access-token'
     }
   };
 
@@ -167,23 +167,23 @@ describe('Azure AD Assign Role to User Script', () => {
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    test('should throw error when AZURE_AD_TENANT_URL is missing', async () => {
+    test('should throw error when ADDRESS is missing', async () => {
       const contextWithoutUrl = {
         environment: {},
         secrets: { AZURE_AD_TOKEN: 'mock-token' }
       };
 
-      await expect(script.invoke(validParams, contextWithoutUrl)).rejects.toThrow('AZURE_AD_TENANT_URL environment variable is required');
+      await expect(script.invoke(validParams, contextWithoutUrl)).rejects.toThrow('ADDRESS environment variable is required');
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    test('should throw error when BEARER_AUTH_TOKEN is missing', async () => {
+    test('should throw error when OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN is missing', async () => {
       const contextWithoutToken = {
-        environment: { AZURE_AD_TENANT_URL: 'https://graph.microsoft.com' },
+        environment: { ADDRESS: 'https://graph.microsoft.com' },
         secrets: {}
       };
 
-      await expect(script.invoke(validParams, contextWithoutToken)).rejects.toThrow('BEARER_AUTH_TOKEN secret is required');
+      await expect(script.invoke(validParams, contextWithoutToken)).rejects.toThrow('OAuth2 authentication is required');
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
