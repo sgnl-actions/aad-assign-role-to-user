@@ -173,7 +173,7 @@ describe('Azure AD Assign Role to User Script', () => {
         secrets: { AZURE_AD_TOKEN: 'mock-token' }
       };
 
-      await expect(script.invoke(validParams, contextWithoutUrl)).rejects.toThrow('ADDRESS environment variable is required');
+      await expect(script.invoke(validParams, contextWithoutUrl)).rejects.toThrow('No URL specified. Provide address parameter or ADDRESS environment variable');
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
@@ -183,7 +183,7 @@ describe('Azure AD Assign Role to User Script', () => {
         secrets: {}
       };
 
-      await expect(script.invoke(validParams, contextWithoutToken)).rejects.toThrow('OAuth2 authentication is required');
+      await expect(script.invoke(validParams, contextWithoutToken)).rejects.toThrow('No authentication configured');
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
