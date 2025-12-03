@@ -6,28 +6,26 @@
  * 2. Create role assignment schedule request for permanent role assignment
  */
 
+import { getBaseUrl, createAuthHeaders } from '@sgnl-actions/utils';
+
 /**
  * Helper function to get user by UPN and assign role
  * @param {string} userPrincipalName - User principal name
  * @param {string} roleId - Role definition ID
  * @param {string} directoryScopeId - Directory scope ID
  * @param {string} justification - Justification for assignment
- * @param {string} tenantUrl - Azure AD tenant URL
- * @param {string} authToken - Azure AD access token
+ * @param {string} baseUrl - Azure AD base URL
+ * @param {Object} headers - Request headers with Authorization
  * @returns {Promise<Object>} API response
  */
-async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, justification, tenantUrl, authToken) {
+async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, justification, baseUrl, headers) {
   // Step 1: Get user by UPN to retrieve their directory object ID
   const encodedUPN = encodeURIComponent(userPrincipalName);
-  const getUserUrl = new URL(`/v1.0/users/${encodedUPN}`, tenantUrl);
+  const getUserUrl = `${baseUrl}/v1.0/users/${encodedUPN}`;
 
-  const getUserResponse = await fetch(getUserUrl.toString(), {
+  const getUserResponse = await fetch(getUserUrl, {
     method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${authToken}`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
+    headers
   });
 
   if (!getUserResponse.ok) {
@@ -38,7 +36,7 @@ async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, jus
   const userId = userData.id;
 
   // Step 2: Create role assignment schedule request
-  const assignRoleUrl = new URL('/v1.0/roleManagement/directory/roleAssignmentScheduleRequests', tenantUrl);
+  const assignRoleUrl = `${baseUrl}/v1.0/roleManagement/directory/roleAssignmentScheduleRequests`;
 
   const roleAssignmentRequest = {
     action: 'adminAssign',
@@ -54,13 +52,9 @@ async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, jus
     }
   };
 
-  const assignRoleResponse = await fetch(assignRoleUrl.toString(), {
+  const assignRoleResponse = await fetch(assignRoleUrl, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${authToken}`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
+    headers,
     body: JSON.stringify(roleAssignmentRequest)
   });
 
@@ -86,6 +80,18 @@ export default {
    * @param {string} params.directoryScopeId - Directory scope ID (default: "/")
    * @param {string} params.justification - Justification for assignment (default: "Approved by SGNL.ai")
    * @param {Object} context - Execution context with env, secrets, outputs
+   * @param {string} context.environment.ADDRESS - Azure AD API base URL
+   *
+   * The configured auth type will determine which of the following environment variables and secrets are available
+   * @param {string} context.secrets.OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET
+   * @param {string} context.environment.OAUTH2_CLIENT_CREDENTIALS_AUDIENCE
+   * @param {string} context.environment.OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE
+   * @param {string} context.environment.OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID
+   * @param {string} context.environment.OAUTH2_CLIENT_CREDENTIALS_SCOPE
+   * @param {string} context.environment.OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL
+   *
+   * @param {string} context.secrets.OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN
+   *
    * @returns {Object} Assignment results
    */
   invoke: async (params, context) => {
@@ -108,17 +114,9 @@ export default {
       justification = 'Approved by SGNL.ai'
     } = params;
 
-    // Validate required environment and secrets
-    if (!context.environment.AZURE_AD_TENANT_URL) {
-      throw new Error('AZURE_AD_TENANT_URL environment variable is required');
-    }
-
-    if (!context.secrets.AZURE_AD_TOKEN) {
-      throw new Error('AZURE_AD_TOKEN secret is required');
-    }
-
-    const tenantUrl = context.environment.AZURE_AD_TENANT_URL;
-    const authToken = context.secrets.AZURE_AD_TOKEN;
+    // Get base URL and authentication headers using utilities
+    const baseUrl = getBaseUrl(params, context);
+    const headers = await createAuthHeaders(context);
 
     console.log(`Assigning role ${roleId} to user ${userPrincipalName} with scope ${directoryScopeId}`);
 
@@ -128,8 +126,8 @@ export default {
         roleId,
         directoryScopeId,
         justification,
-        tenantUrl,
-        authToken
+        baseUrl,
+        headers
       );
 
       console.log(`Successfully assigned role to user. Request ID: ${result.requestId}`);
@@ -148,33 +146,19 @@ export default {
   },
 
   /**
-   * Error recovery handler - handles retryable errors
+   * Error recovery handler - framework handles retries by default
+   * Only implement if custom recovery logic is needed
    * @param {Object} params - Original params plus error information
    * @param {Object} context - Execution context
    * @returns {Object} Recovery results
    */
   error: async (params, _context) => {
-    const { error } = params;
-    console.error(`Role assignment encountered error: ${error.message}`);
+    const { error, userPrincipalName, roleId } = params;
+    console.error(`Role assignment failed for user ${userPrincipalName} with role ${roleId}: ${error.message}`);
 
-    // Check if error is retryable
-    if (error.message.includes('429') || // Rate limited
-        error.message.includes('502') || // Bad gateway
-        error.message.includes('503') || // Service unavailable
-        error.message.includes('504')) { // Gateway timeout
-      console.log('Detected retryable error, waiting before retry...');
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      return { status: 'retry_requested' };
-    }
-
-    // Mark authentication/authorization errors as fatal
-    if (error.message.includes('401') || error.message.includes('403')) {
-      console.error('Authentication/authorization error - not retrying');
-      throw error;
-    }
-
-    // Default: let framework handle retry
-    return { status: 'retry_requested' };
+    // Framework handles retries for transient errors (429, 502, 503, 504)
+    // Just re-throw the error to let the framework handle it
+    throw error;
   },
 
   /**

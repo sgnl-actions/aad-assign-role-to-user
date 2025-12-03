@@ -25,17 +25,32 @@ The Azure AD application or service principal must have:
 
 ## Configuration
 
-### Secrets
+### Authentication
 
-| Name | Description | Required |
-|------|-------------|----------|
-| `AZURE_AD_TOKEN` | Azure AD access token with Directory.ReadWrite.All permissions | Yes |
+This action supports two OAuth2 authentication methods:
 
-### Environment Variables
+#### OAuth2 Authorization Code Flow
 
-| Name | Description | Required | Default |
-|------|-------------|----------|---------|
-| `AZURE_AD_TENANT_URL` | Azure AD tenant URL (e.g., https://graph.microsoft.com) | Yes | None |
+**Required Secrets:**
+- **`OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN`**: OAuth2 access token
+
+#### OAuth2 Client Credentials Flow
+
+**Required Secrets:**
+- **`OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET`**: OAuth2 client secret
+
+**Required Environment Variables:**
+- **`OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL`**: Token endpoint URL
+- **`OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID`**: OAuth2 client ID
+
+**Optional Environment Variables:**
+- **`OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE`**: Authentication style (`InHeader`, `InParams`, or `AutoDetect`)
+- **`OAUTH2_CLIENT_CREDENTIALS_SCOPE`**: OAuth2 scope
+- **`OAUTH2_CLIENT_CREDENTIALS_AUDIENCE`**: OAuth2 audience
+
+### Required Environment Variables
+
+- **`ADDRESS`**: Azure AD API base URL (e.g., `https://graph.microsoft.com`)
 
 ### Input Parameters
 
@@ -75,6 +90,43 @@ The Azure AD application or service principal must have:
   "roleId": "62e90394-69f5-4237-9190-012177145e10",
   "directoryScopeId": "/administrativeUnits/12345678-1234-1234-1234-123456789abc",
   "justification": "Temporary administrative access for project deployment"
+}
+```
+
+### With OAuth2 Client Credentials
+
+```json
+{
+  "script_inputs": {
+    "userPrincipalName": "john.doe@example.com",
+    "roleId": "729827e3-9c14-49f7-bb1b-9608f156bbb8"
+  },
+  "environment": {
+    "ADDRESS": "https://graph.microsoft.com",
+    "OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL": "https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/token",
+    "OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID": "your-client-id",
+    "OAUTH2_CLIENT_CREDENTIALS_SCOPE": "https://graph.microsoft.com/.default"
+  },
+  "secrets": {
+    "OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET": "your-client-secret"
+  }
+}
+```
+
+### With OAuth2 Authorization Code
+
+```json
+{
+  "script_inputs": {
+    "userPrincipalName": "john.doe@example.com",
+    "roleId": "729827e3-9c14-49f7-bb1b-9608f156bbb8"
+  },
+  "environment": {
+    "ADDRESS": "https://graph.microsoft.com"
+  },
+  "secrets": {
+    "OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN": "your-access-token"
+  }
 }
 ```
 
@@ -135,21 +187,6 @@ npm run lint
 
 # Build distribution
 npm run build
-```
-
-### Testing with Real Azure AD
-
-For integration testing with a real Azure AD tenant:
-
-1. Create an application registration in Azure AD
-2. Grant necessary permissions and admin consent
-3. Generate an access token
-4. Set environment variables and run tests
-
-```bash
-export AZURE_AD_TENANT_URL="https://graph.microsoft.com"
-export AZURE_AD_TOKEN="your-access-token"
-npm run dev
 ```
 
 ## Security Considerations
