@@ -318,33 +318,19 @@ var script = {
   },
 
   /**
-   * Error recovery handler - handles retryable errors
+   * Error recovery handler - framework handles retries by default
+   * Only implement if custom recovery logic is needed
    * @param {Object} params - Original params plus error information
    * @param {Object} context - Execution context
    * @returns {Object} Recovery results
    */
   error: async (params, _context) => {
-    const { error } = params;
-    console.error(`Role assignment encountered error: ${error.message}`);
+    const { error, userPrincipalName, roleId } = params;
+    console.error(`Role assignment failed for user ${userPrincipalName} with role ${roleId}: ${error.message}`);
 
-    // Check if error is retryable
-    if (error.message.includes('429') || // Rate limited
-        error.message.includes('502') || // Bad gateway
-        error.message.includes('503') || // Service unavailable
-        error.message.includes('504')) { // Gateway timeout
-      console.log('Detected retryable error, waiting before retry...');
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      return { status: 'retry_requested' };
-    }
-
-    // Mark authentication/authorization errors as fatal
-    if (error.message.includes('401') || error.message.includes('403')) {
-      console.error('Authentication/authorization error - not retrying');
-      throw error;
-    }
-
-    // Default: let framework handle retry
-    return { status: 'retry_requested' };
+    // Framework handles retries for transient errors (429, 502, 503, 504)
+    // Just re-throw the error to let the framework handle it
+    throw error;
   },
 
   /**

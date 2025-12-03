@@ -219,84 +219,47 @@ describe('Azure AD Assign Role to User Script', () => {
   });
 
   describe('error handler', () => {
-    test('should handle retryable errors (429)', async () => {
+    test('should re-throw error and let framework handle retries', async () => {
+      const errorObj = new Error('Rate limited: 429 Too Many Requests');
       const params = {
         ...validParams,
-        error: { message: 'Rate limited: 429 Too Many Requests' }
+        error: errorObj
       };
 
-      const result = await script.error(params, mockContext);
-      expect(result.status).toBe('retry_requested');
-    }, 10000);
-
-    test('should handle retryable errors (502)', async () => {
-      const params = {
-        ...validParams,
-        error: { message: 'Bad gateway: 502 Bad Gateway' }
-      };
-
-      const result = await script.error(params, mockContext);
-      expect(result.status).toBe('retry_requested');
+      await expect(script.error(params, mockContext)).rejects.toThrow(errorObj);
+      expect(console.error).toHaveBeenCalledWith(
+        'Role assignment failed for user test.user@example.com with role 12345678-1234-1234-1234-123456789abc: Rate limited: 429 Too Many Requests'
+      );
     });
 
-    test('should handle retryable errors (503)', async () => {
+    test('should re-throw server errors', async () => {
+      const errorObj = new Error('Bad gateway: 502 Bad Gateway');
       const params = {
         ...validParams,
-        error: { message: 'Service unavailable: 503 Service Unavailable' }
+        error: errorObj
       };
 
-      const result = await script.error(params, mockContext);
-      expect(result.status).toBe('retry_requested');
+      await expect(script.error(params, mockContext)).rejects.toThrow(errorObj);
     });
 
-    test('should handle retryable errors (504)', async () => {
+    test('should re-throw authentication errors', async () => {
+      const errorObj = new Error('Unauthorized: 401 Unauthorized');
       const params = {
         ...validParams,
-        error: { message: 'Gateway timeout: 504 Gateway Timeout' }
+        error: errorObj
       };
 
-      const result = await script.error(params, mockContext);
-      expect(result.status).toBe('retry_requested');
+      await expect(script.error(params, mockContext)).rejects.toThrow(errorObj);
     });
 
-    test('should throw fatal authentication errors (401)', async () => {
+    test('should re-throw any error', async () => {
+      const errorObj = new Error('Unknown error occurred');
       const params = {
         ...validParams,
-        error: { message: 'Unauthorized: 401 Unauthorized' }
+        error: errorObj
       };
 
-      try {
-        const result = await script.error(params, mockContext);
-        console.log('Error handler returned:', result);
-        expect(result).not.toBeDefined();
-      } catch (error) {
-        expect(error.message).toContain('401');
-      }
-    });
-
-    test('should throw fatal authorization errors (403)', async () => {
-      const params = {
-        ...validParams,
-        error: { message: 'Forbidden: 403 Forbidden' }
-      };
-
-      try {
-        const result = await script.error(params, mockContext);
-        console.log('Error handler returned:', result);
-        expect(result).not.toBeDefined();
-      } catch (error) {
-        expect(error.message).toContain('403');
-      }
-    });
-
-    test('should request retry for unknown errors', async () => {
-      const params = {
-        ...validParams,
-        error: { message: 'Unknown error occurred' }
-      };
-
-      const result = await script.error(params, mockContext);
-      expect(result.status).toBe('retry_requested');
+      await expect(script.error(params, mockContext)).rejects.toThrow(errorObj);
     });
   });
 
