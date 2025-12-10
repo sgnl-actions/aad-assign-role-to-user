@@ -554,7 +554,7 @@ var script = {
     // Resolve JSONPath templates in params
     const { result: resolvedParams, errors } = resolveJSONPathTemplates(params, jobContext);
     if (errors.length > 0) {
-      console.warn('Template resolution errors:', errors);
+      throw new Error(`Failed to resolve template values: ${errors.join(', ')}`);
     }
 
     // Validate required parameters
