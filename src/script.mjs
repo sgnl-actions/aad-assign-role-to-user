@@ -6,7 +6,7 @@
  * 2. Create role assignment schedule request for permanent role assignment
  */
 
-import { getBaseUrl, createAuthHeaders } from '@sgnl-actions/utils';
+import { getBaseURL, createAuthHeaders, resolveJSONPathTemplates} from '@sgnl-actions/utils';
 
 /**
  * Helper function to get user by UPN and assign role
@@ -97,12 +97,20 @@ export default {
   invoke: async (params, context) => {
     console.log('Starting Azure AD role assignment');
 
+    const jobContext = context.data || {};
+
+    // Resolve JSONPath templates in params
+    const { result: resolvedParams, errors } = resolveJSONPathTemplates(params, jobContext);
+    if (errors.length > 0) {
+      console.warn('Template resolution errors:', errors);
+    }
+
     // Validate required parameters
-    if (!params.userPrincipalName) {
+    if (!resolvedParams.userPrincipalName) {
       throw new Error('userPrincipalName is required');
     }
 
-    if (!params.roleId) {
+    if (!resolvedParams.roleId) {
       throw new Error('roleId is required');
     }
 
@@ -112,10 +120,10 @@ export default {
       roleId,
       directoryScopeId = '/',
       justification = 'Approved by SGNL.ai'
-    } = params;
+    } = resolvedParams;
 
     // Get base URL and authentication headers using utilities
-    const baseUrl = getBaseUrl(params, context);
+    const baseUrl = getBaseURL(resolvedParams, context);
     const headers = await createAuthHeaders(context);
 
     console.log(`Assigning role ${roleId} to user ${userPrincipalName} with scope ${directoryScopeId}`);
