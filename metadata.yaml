@@ -37,15 +37,13 @@ inputs:
       min: 1
       max: 512
 
-# Required secrets from Azure AD
-secrets:
-  AZURE_AD_TOKEN:
-    description: Azure AD access token with Directory.ReadWrite.All permissions
-
-# Required environment variables
-environment:
-  AZURE_AD_TENANT_URL:
-    description: Azure AD tenant URL (e.g., https://graph.microsoft.com)
+  address:
+    type: text
+    description: Optional Azure AD API base URL override
+    required: false
+    validation:
+      min: 1
+      max: 100
 
 # Expected output structure
 outputs:
@@ -68,3 +66,7 @@ outputs:
   requestId:
     type: text
     description: Role assignment request ID
+
+  address:
+    type: text
+    description: The Azure AD API base URL used

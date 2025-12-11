@@ -105,15 +105,6 @@ export default {
       console.warn('Template resolution errors:', errors);
     }
 
-    // Validate required parameters
-    if (!resolvedParams.userPrincipalName) {
-      throw new Error('userPrincipalName is required');
-    }
-
-    if (!resolvedParams.roleId) {
-      throw new Error('roleId is required');
-    }
-
     // Extract parameters with defaults
     const {
       userPrincipalName,
@@ -145,7 +136,8 @@ export default {
         userPrincipalName,
         roleId,
         userId: result.userId,
-        requestId: result.requestId
+        requestId: result.requestId,
+        address: baseUrl
       };
     } catch (error) {
       console.error(`Failed to assign role: ${error.message}`);
