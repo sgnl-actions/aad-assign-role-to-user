@@ -79,6 +79,7 @@ export default {
    * @param {string} params.roleId - Role definition ID
    * @param {string} params.directoryScopeId - Directory scope ID (default: "/")
    * @param {string} params.justification - Justification for assignment (default: "Approved by SGNL.ai")
+   * @param {string} params.address - The Azure AD API base URL (e.g., https://graph.microsoft.com)
    * @param {Object} context - Execution context with env, secrets, outputs
    * @param {string} context.environment.ADDRESS - Azure AD API base URL
    *
@@ -103,15 +104,6 @@ export default {
     const { result: resolvedParams, errors } = resolveJSONPathTemplates(params, jobContext);
     if (errors.length > 0) {
       console.warn('Template resolution errors:', errors);
-    }
-
-    // Validate required parameters
-    if (!resolvedParams.userPrincipalName) {
-      throw new Error('userPrincipalName is required');
-    }
-
-    if (!resolvedParams.roleId) {
-      throw new Error('roleId is required');
     }
 
     // Extract parameters with defaults
@@ -145,7 +137,8 @@ export default {
         userPrincipalName,
         roleId,
         userId: result.userId,
-        requestId: result.requestId
+        requestId: result.requestId,
+        address: baseUrl
       };
     } catch (error) {
       console.error(`Failed to assign role: ${error.message}`);

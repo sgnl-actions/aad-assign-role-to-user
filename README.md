@@ -29,47 +29,47 @@ The Azure AD application or service principal must have:
 
 This action supports two OAuth2 authentication methods:
 
-#### OAuth2 Authorization Code Flow
+#### Option 1: OAuth2 Client Credentials
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET` | Secret | Yes | OAuth2 client secret |
+| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID` | Environment | Yes | OAuth2 client ID |
+| `OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL` | Environment | Yes | OAuth2 token endpoint URL |
+| `OAUTH2_CLIENT_CREDENTIALS_SCOPE` | Environment | No | OAuth2 scope |
+| `OAUTH2_CLIENT_CREDENTIALS_AUDIENCE` | Environment | No | OAuth2 audience |
+| `OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE` | Environment | No | OAuth2 auth style |
 
-**Required Secrets:**
-- **`OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN`**: OAuth2 access token
+#### Option 2: OAuth2 Authorization Code
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN` | Secret | Yes | OAuth2 access token |
 
-#### OAuth2 Client Credentials Flow
+### Environment Variables
 
-**Required Secrets:**
-- **`OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET`**: OAuth2 client secret
-
-**Required Environment Variables:**
-- **`OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL`**: Token endpoint URL
-- **`OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID`**: OAuth2 client ID
-
-**Optional Environment Variables:**
-- **`OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE`**: Authentication style (`InHeader`, `InParams`, or `AutoDetect`)
-- **`OAUTH2_CLIENT_CREDENTIALS_SCOPE`**: OAuth2 scope
-- **`OAUTH2_CLIENT_CREDENTIALS_AUDIENCE`**: OAuth2 audience
-
-### Required Environment Variables
-
-- **`ADDRESS`**: Azure AD API base URL (e.g., `https://graph.microsoft.com`)
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `ADDRESS` | Yes | Default Azure AD API base URL | `https://graph.microsoft.com` |
 
 ### Input Parameters
 
-| Name | Type | Description | Required | Default |
-|------|------|-------------|----------|---------|
-| `userPrincipalName` | string | User Principal Name (UPN) of the user to assign the role to | Yes | None |
-| `roleId` | string | Directory role definition ID to assign | Yes | None |
-| `directoryScopeId` | string | Directory scope ID for the role assignment | No | "/" |
-| `justification` | string | Justification for the role assignment | No | "Approved by SGNL.ai" |
+| Parameter | Type | Required | Description | Default |
+|-----------|------|----------|-------------|---------|
+| `userPrincipalName` | string | Yes | User Principal Name (UPN) of the user | None |
+| `roleId` | string | Yes | Directory role definition ID to assign | None |
+| `directoryScopeId` | string | No | Directory scope ID for the role assignment | "/" |
+| `justification` | string | No | Justification for the role assignment | "Approved by SGNL.ai" |
+| `address` | string | No | Optional Azure AD API base URL override | None |
 
-### Output Values
+### Output Structure
 
-| Name | Type | Description |
-|------|------|-------------|
+| Field | Type | Description |
+|-------|------|-------------|
 | `status` | string | Operation result (success, failed, recovered, etc.) |
 | `userPrincipalName` | string | User Principal Name that was processed |
 | `roleId` | string | Role ID that was assigned |
 | `userId` | string | User's directory object ID |
 | `requestId` | string | Role assignment request ID |
+| `address` | string | The Azure AD API base URL used |
 
 ## Usage Examples
 
