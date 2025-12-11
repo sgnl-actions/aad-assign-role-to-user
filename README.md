@@ -30,19 +30,19 @@ The Azure AD application or service principal must have:
 This action supports two OAuth2 authentication methods:
 
 #### Option 1: OAuth2 Client Credentials
-| Secret/Environment | Required | Description |
-|-------------------|----------|-------------|
-| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET` | Yes | OAuth2 client secret |
-| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID` | Yes | OAuth2 client ID |
-| `OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL` | Yes | OAuth2 token endpoint URL |
-| `OAUTH2_CLIENT_CREDENTIALS_SCOPE` | No | OAuth2 scope |
-| `OAUTH2_CLIENT_CREDENTIALS_AUDIENCE` | No | OAuth2 audience |
-| `OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE` | No | OAuth2 auth style |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET` | Secret | Yes | OAuth2 client secret |
+| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID` | Environment | Yes | OAuth2 client ID |
+| `OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL` | Environment | Yes | OAuth2 token endpoint URL |
+| `OAUTH2_CLIENT_CREDENTIALS_SCOPE` | Environment | No | OAuth2 scope |
+| `OAUTH2_CLIENT_CREDENTIALS_AUDIENCE` | Environment | No | OAuth2 audience |
+| `OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE` | Environment | No | OAuth2 auth style |
 
 #### Option 2: OAuth2 Authorization Code
-| Secret | Required | Description |
-|--------|----------|-------------|
-| `OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN` | Yes | OAuth2 access token |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN` | Secret | Yes | OAuth2 access token |
 
 ### Environment Variables
 
