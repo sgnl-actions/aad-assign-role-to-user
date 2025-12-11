@@ -79,6 +79,7 @@ export default {
    * @param {string} params.roleId - Role definition ID
    * @param {string} params.directoryScopeId - Directory scope ID (default: "/")
    * @param {string} params.justification - Justification for assignment (default: "Approved by SGNL.ai")
+   * @param {string} params.address - The Azure AD API base URL (e.g., https://graph.microsoft.com)
    * @param {Object} context - Execution context with env, secrets, outputs
    * @param {string} context.environment.ADDRESS - Azure AD API base URL
    *
