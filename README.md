@@ -30,25 +30,25 @@ The Azure AD application or service principal must have:
 This action supports two OAuth2 authentication methods:
 
 #### Option 1: OAuth2 Client Credentials
-| Secret/Environment | Description |
-|-------------------|-------------|
-| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET` | OAuth2 client secret |
-| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID` | OAuth2 client ID |
-| `OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL` | OAuth2 token endpoint URL |
-| `OAUTH2_CLIENT_CREDENTIALS_SCOPE` | OAuth2 scope (optional) |
-| `OAUTH2_CLIENT_CREDENTIALS_AUDIENCE` | OAuth2 audience (optional) |
-| `OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE` | OAuth2 auth style (optional) |
+| Secret/Environment | Required | Description |
+|-------------------|----------|-------------|
+| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET` | Yes | OAuth2 client secret |
+| `OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID` | Yes | OAuth2 client ID |
+| `OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL` | Yes | OAuth2 token endpoint URL |
+| `OAUTH2_CLIENT_CREDENTIALS_SCOPE` | No | OAuth2 scope |
+| `OAUTH2_CLIENT_CREDENTIALS_AUDIENCE` | No | OAuth2 audience |
+| `OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE` | No | OAuth2 auth style |
 
 #### Option 2: OAuth2 Authorization Code
-| Secret | Description |
-|--------|-------------|
-| `OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN` | OAuth2 access token |
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN` | Yes | OAuth2 access token |
 
-### Required Environment Variables
+### Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `ADDRESS` | Default Azure AD API base URL | `https://graph.microsoft.com` |
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `ADDRESS` | Yes | Default Azure AD API base URL | `https://graph.microsoft.com` |
 
 ### Input Parameters
 
