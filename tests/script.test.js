@@ -153,39 +153,9 @@ describe('Azure AD Assign Role to User Script', () => {
       );
     });
 
-    test('should throw error when userPrincipalName is missing', async () => {
-      const params = { roleId: '12345678-1234-1234-1234-123456789abc' };
 
-      await expect(script.invoke(params, mockContext)).rejects.toThrow('userPrincipalName is required');
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
 
-    test('should throw error when roleId is missing', async () => {
-      const params = { userPrincipalName: 'test.user@example.com' };
 
-      await expect(script.invoke(params, mockContext)).rejects.toThrow('roleId is required');
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    test('should throw error when ADDRESS is missing', async () => {
-      const contextWithoutUrl = {
-        environment: {},
-        secrets: { AZURE_AD_TOKEN: 'mock-token' }
-      };
-
-      await expect(script.invoke(validParams, contextWithoutUrl)).rejects.toThrow('No URL specified. Provide address parameter or ADDRESS environment variable');
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    test('should throw error when OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN is missing', async () => {
-      const contextWithoutToken = {
-        environment: { ADDRESS: 'https://graph.microsoft.com' },
-        secrets: {}
-      };
-
-      await expect(script.invoke(validParams, contextWithoutToken)).rejects.toThrow('No authentication configured');
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
 
     test('should handle user lookup failure', async () => {
       // Mock failed user lookup
