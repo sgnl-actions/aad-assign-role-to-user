@@ -46,7 +46,7 @@ async function getClientCredentialsToken(config) {
     params.append('client_id', clientId);
     params.append('client_secret', clientSecret);
   } else {
-    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    const credentials = btoa(`${clientId}:${clientSecret}`);
     headers['Authorization'] = `Basic ${credentials}`;
   }
 
@@ -99,7 +99,7 @@ async function getAuthorizationHeader(context) {
 
   // Method 2: Basic Auth (username + password)
   if (secrets.BASIC_PASSWORD && secrets.BASIC_USERNAME) {
-    const credentials = Buffer.from(`${secrets.BASIC_USERNAME}:${secrets.BASIC_PASSWORD}`).toString('base64');
+    const credentials = btoa(`${secrets.BASIC_USERNAME}:${secrets.BASIC_PASSWORD}`);
     return `Basic ${credentials}`;
   }
 
