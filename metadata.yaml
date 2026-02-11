@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/sgnl-actions/schemas/main/metadata.schema.json
 name: aad-assign-role-to-user
 description: Assign a directory role to a user in Azure Active Directory
 
