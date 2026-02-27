@@ -26,7 +26,7 @@
   "author": "SGNL Engineering",
   "license": "MIT",
   "dependencies": {
-    "@sgnl-actions/utils": "github:sgnl-actions/utils#v1.0.7"
+    "@sgnl-actions/utils": "github:sgnl-actions/utils#v1.0.8"
   },
   "devDependencies": {
     "@sgnl-actions/eslint-config": "github:sgnl-actions/eslint-config#2b56a0c67e638f21688d73dbfb228a2f2d868235",
