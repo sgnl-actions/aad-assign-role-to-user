@@ -1,0 +1,16 @@
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store, no-cache
+Pragma: no-cache
+Content-Length: 1327
+Expires: -1
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+P3P: CP="DSP CUR OTPi IND OTRi ONL FIN"
+x-ms-request-id: 12345678-1234-1234-1234-123456789012
+Set-Cookie: fpc=AuH...; expires=Wed, 27-Feb-2026 10:30:00 GMT; path=/; secure; HttpOnly; SameSite=None
+Set-Cookie: x-ms-gateway-slice=estsfd; path=/; secure; samesite=none; httponly
+Set-Cookie: stsservicecookie=estsfd; path=/; secure; samesite=none; httponly
+Date: Mon, 25 Feb 2026 10:30:00 GMT
+
+{"token_type":"Bearer","expires_in":"3599","ext_expires_in":"3599","access_token":"testtoken"}
