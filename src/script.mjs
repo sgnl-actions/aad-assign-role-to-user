@@ -160,8 +160,6 @@ export default {
           roleId,
           userId: result.userId,
           requestId: result.existingAssignmentId,
-          alreadyAssigned: true,
-          message: 'Role already assigned to user',
           address: baseUrl
         };
       } else {
@@ -172,7 +170,6 @@ export default {
           roleId,
           userId: result.userId,
           requestId: result.requestId,
-          alreadyAssigned: false,
           address: baseUrl
         };
       }
