@@ -35,7 +35,35 @@ async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, jus
   const userData = await getUserResponse.json();
   const userId = userData.id;
 
-  // Step 2: Create role assignment schedule request
+  // Step 2: Check if role assignment already exists (for idempotency)
+  const baseURL = `${baseUrl}/v1.0/roleManagement/directory/roleAssignments`;
+  const url = new URL(baseURL);
+  url.searchParams.set('$filter', `principalId eq '${userId}' and roleDefinitionId eq '${roleId}' and directoryScopeId eq '${directoryScopeId}'`);
+  const checkAssignmentUrl = url.toString();
+
+  const checkResponse = await fetch(checkAssignmentUrl, {
+    method: 'GET',
+    headers
+  });
+
+  if (!checkResponse.ok) {
+    throw new Error(`Failed to check existing role assignments for user ${userPrincipalName}: ${checkResponse.status} ${checkResponse.statusText}`);
+  }
+
+  const existingAssignments = await checkResponse.json();
+
+  // If assignment already exists, return success without creating duplicate
+  if (existingAssignments.value && existingAssignments.value.length > 0) {
+    return {
+      userId,
+      requestId: null,
+      assignmentData: null,
+      alreadyAssigned: true,
+      existingAssignmentId: existingAssignments.value[0].id
+    };
+  }
+
+  // Step 3: Create role assignment schedule request (only if it doesn't exist)
   const assignRoleUrl = `${baseUrl}/v1.0/roleManagement/directory/roleAssignmentScheduleRequests`;
 
   const roleAssignmentRequest = {
@@ -67,7 +95,8 @@ async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, jus
   return {
     userId,
     requestId: assignmentData.id,
-    assignmentData
+    assignmentData,
+    alreadyAssigned: false
   };
 }
 
@@ -122,16 +151,27 @@ export default {
         headers
       );
 
-      console.log(`Successfully assigned role to user. Request ID: ${result.requestId}`);
-
-      return {
-        status: 'success',
-        userPrincipalName,
-        roleId,
-        userId: result.userId,
-        requestId: result.requestId,
-        address: baseUrl
-      };
+      if (result.alreadyAssigned) {
+        console.log(`Role assignment already exists for user. Existing assignment ID: ${result.existingAssignmentId}`);
+        return {
+          status: 'success',
+          userPrincipalName,
+          roleId,
+          userId: result.userId,
+          requestId: result.existingAssignmentId,
+          address: baseUrl
+        };
+      } else {
+        console.log(`Successfully assigned role to user. Request ID: ${result.requestId}`);
+        return {
+          status: 'success',
+          userPrincipalName,
+          roleId,
+          userId: result.userId,
+          requestId: result.requestId,
+          address: baseUrl
+        };
+      }
     } catch (error) {
       console.error(`Failed to assign role: ${error.message}`);
       throw error;

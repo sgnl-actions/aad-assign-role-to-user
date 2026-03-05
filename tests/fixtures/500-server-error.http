@@ -1,0 +1,22 @@
+HTTP/2 500 
+cache-control: no-cache
+content-type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+strict-transport-security: max-age=31536000
+request-id: 12345678-1234-1234-1234-123456789pqr
+client-request-id: 12345678-1234-1234-1234-123456789pqr
+x-ms-ags-diagnostic: {"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"MWH0EPF000C6E57"}}
+x-ms-resource-unit: 1
+odata-version: 4.0
+date: Wed, 05 Mar 2026 01:35:00 GMT
+
+{
+  "error": {
+    "code": "InternalServerError",
+    "message": "Internal server error",
+    "innerError": {
+      "date": "2026-03-05T01:35:00",
+      "request-id": "12345678-1234-1234-1234-123456789pqr",
+      "client-request-id": "12345678-1234-1234-1234-123456789pqr"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+HTTP/2 400 
+cache-control: no-cache
+content-type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+strict-transport-security: max-age=31536000
+request-id: 7ee0085b-915a-4a0b-a2c4-09969dace8b0
+client-request-id: 7ee0085b-915a-4a0b-a2c4-09969dace8b0
+x-ms-ags-diagnostic: {"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"MWH0EPF000C6E57"}}
+x-ms-resource-unit: 1
+odata-version: 4.0
+date: Wed, 05 Mar 2026 02:00:20 GMT
+
+{
+  "error": {
+    "code": "SubjectNotFound",
+    "message": "The subject is not found.",
+    "innerError": {
+      "date": "2026-03-05T02:00:20",
+      "request-id": "7ee0085b-915a-4a0b-a2c4-09969dace8b0",
+      "client-request-id": "7ee0085b-915a-4a0b-a2c4-09969dace8b0"
+    }
+  }
+}

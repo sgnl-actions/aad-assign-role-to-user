@@ -1,0 +1,22 @@
+HTTP/2 400 
+cache-control: no-cache
+content-type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+strict-transport-security: max-age=31536000
+request-id: c5610400-e869-471e-9258-1b5b590bbd97
+client-request-id: c5610400-e869-471e-9258-1b5b590bbd97
+x-ms-ags-diagnostic: {"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"MWH0EPF000C6E57"}}
+x-ms-resource-unit: 1
+odata-version: 4.0
+date: Wed, 05 Mar 2026 02:01:34 GMT
+
+{
+  "error": {
+    "code": "RoleNotFound",
+    "message": "The role is not found.",
+    "innerError": {
+      "date": "2026-03-05T02:01:34",
+      "request-id": "c5610400-e869-471e-9258-1b5b590bbd97",
+      "client-request-id": "c5610400-e869-471e-9258-1b5b590bbd97"
+    }
+  }
+}
