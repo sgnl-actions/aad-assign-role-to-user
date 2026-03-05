@@ -36,11 +36,10 @@ async function assignRoleToUser(userPrincipalName, roleId, directoryScopeId, jus
   const userId = userData.id;
 
   // Step 2: Check if role assignment already exists (for idempotency)
-  const encodedRoleId = encodeURIComponent(roleId);
-  const encodedUserId = encodeURIComponent(userId);
-  const encodedScopeId = encodeURIComponent(directoryScopeId);
-
-  const checkAssignmentUrl = `${baseUrl}/v1.0/roleManagement/directory/roleAssignments?$filter=principalId eq '${encodedUserId}' and roleDefinitionId eq '${encodedRoleId}' and directoryScopeId eq '${encodedScopeId}'`;
+  const baseURL = `${baseUrl}/v1.0/roleManagement/directory/roleAssignments`;
+  const url = new URL(baseURL);
+  url.searchParams.set('$filter', `principalId eq '${userId}' and roleDefinitionId eq '${roleId}' and directoryScopeId eq '${directoryScopeId}'`);
+  const checkAssignmentUrl = url.toString();
 
   const checkResponse = await fetch(checkAssignmentUrl, {
     method: 'GET',
