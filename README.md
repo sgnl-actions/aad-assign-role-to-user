@@ -180,7 +180,7 @@ npm test
 npm run test:coverage
 
 # Run locally with test parameters
-npm run dev -- --params '{"userPrincipalName": "test@example.com", "roleId": "12345678-1234-1234-1234-123456789abc"}'
+npm run dev -- --params '{"userPrincipalName": "test@example.com", "roleId": "12345678-1234-1234-1234-123456789abc"}' --secrets '{"OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET":"xxx","OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID":"xxx","OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL":"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token","OAUTH2_CLIENT_CREDENTIALS_SCOPE":"https://graph.microsoft.com/.default"}'
 
 # Lint code
 npm run lint
