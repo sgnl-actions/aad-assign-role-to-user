@@ -1,0 +1,272 @@
+# Azure AD Assign Role to User Test Scenarios
+action:
+  params:
+    userPrincipalName: testuser@yourtenant.onmicrosoft.com
+    roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+    directoryScopeId: "/"
+    justification: "Approved by SGNL.ai"
+  context:
+    secrets:
+      OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET: test-client-secret
+    environment:
+      ADDRESS: https://graph.microsoft.com
+      OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+      OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID: test-client-id
+      OAUTH2_CLIENT_CREDENTIALS_SCOPE: https://graph.microsoft.com/.default
+
+scenarios:
+  - name: successfully assign role to user
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876b%27+and+directoryScopeId+eq+%27%2F%27
+        fixture: fixtures/200-no-existing-assignments.http
+      - request:
+          method: POST
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignmentScheduleRequests
+        fixture: fixtures/200-role-assignment-success.http
+    invoke:
+      returns:
+        status: success
+        userPrincipalName: testuser@yourtenant.onmicrosoft.com
+        roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+        userId: c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca
+        requestId: 947a02ed-4c5e-4ee2-8cc4-5f220a66d183
+        address: https://graph.microsoft.com
+
+  - name: idempotent - role assignment already exists (should handle gracefully)
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876b%27+and+directoryScopeId+eq+%27%2F%27
+        fixture: fixtures/200-existing-role-assignment.http
+    invoke:
+      returns:
+        status: success
+        userPrincipalName: testuser@yourtenant.onmicrosoft.com
+        roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+        userId: c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca
+        requestId: existing-assignment-123
+        address: https://graph.microsoft.com
+
+  - name: custom justification and directory scope
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876b%27+and+directoryScopeId+eq+%27%2F%27
+        fixture: fixtures/200-no-existing-assignments.http
+      - request:
+          method: POST
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignmentScheduleRequests
+        fixture: fixtures/200-role-assignment-success.http
+    invoke:
+      returns:
+        status: success
+        userPrincipalName: testuser@yourtenant.onmicrosoft.com
+        roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+        userId: c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca
+        requestId: 947a02ed-4c5e-4ee2-8cc4-5f220a66d183
+        address: https://graph.microsoft.com
+
+  - name: user not found
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/404-user-not-found.http
+    invoke:
+      throws: "Failed to get user testuser@yourtenant.onmicrosoft.com: 404 Not Found"
+
+  - name: server error - should be retried by framework
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/500-server-error.http
+    invoke:
+      throws: "Failed to get user testuser@yourtenant.onmicrosoft.com: 500 Internal Server Error"
+
+  - name: UPN with special characters
+    params:
+      userPrincipalName: test+user@yourtenant.onmicrosoft.com
+      roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+      directoryScopeId: "/"
+      justification: "Approved by SGNL.ai"
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/test%2Buser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876b%27+and+directoryScopeId+eq+%27%2F%27
+        fixture: fixtures/200-no-existing-assignments.http
+      - request:
+          method: POST
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignmentScheduleRequests
+        fixture: fixtures/200-role-assignment-success.http
+    invoke:
+      returns:
+        status: success
+        userPrincipalName: test+user@yourtenant.onmicrosoft.com
+        roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+        userId: c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca
+        requestId: 947a02ed-4c5e-4ee2-8cc4-5f220a66d183
+        address: https://graph.microsoft.com
+
+  - name: administrative unit scope assignment
+    params:
+      userPrincipalName: testuser@yourtenant.onmicrosoft.com
+      roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+      directoryScopeId: "/administrativeUnits/12345678-1234-1234-1234-123456789abc"
+      justification: "Administrative unit role assignment"
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876b%27+and+directoryScopeId+eq+%27%2FadministrativeUnits%2F12345678-1234-1234-1234-123456789abc%27
+        fixture: fixtures/200-no-existing-assignments.http
+      - request:
+          method: POST
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignmentScheduleRequests
+        fixture: fixtures/200-role-assignment-success.http
+    invoke:
+      returns:
+        status: success
+        userPrincipalName: testuser@yourtenant.onmicrosoft.com
+        roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+        userId: c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca
+        requestId: 947a02ed-4c5e-4ee2-8cc4-5f220a66d183
+        address: https://graph.microsoft.com
+
+  # True idempotent scenario - implemented with existing assignment check
+  - name: true idempotency - check existing assignments first (script enhanced)
+    params:
+      userPrincipalName: testuser@yourtenant.onmicrosoft.com
+      roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+      directoryScopeId: "/"
+      justification: "Approved by SGNL.ai"
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      # Check existing role assignments before creating new ones
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876b%27+and+directoryScopeId+eq+%27%2F%27
+        fixture: fixtures/200-existing-role-assignment.http
+    invoke:
+      returns:
+        status: success
+        userPrincipalName: testuser@yourtenant.onmicrosoft.com
+        roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
+        userId: c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca
+        requestId: existing-assignment-123
+        address: https://graph.microsoft.com
+
+  - name: role not found - invalid roleDefinitionId
+    params:
+      userPrincipalName: testuser@yourtenant.onmicrosoft.com
+      roleId: 88d8e3e3-8f55-4a1e-953a-9b9898b8876c
+      directoryScopeId: "/"
+      justification: "Approved by SGNL.ai"
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876c%27+and+directoryScopeId+eq+%27%2F%27
+        fixture: fixtures/400-invalid-role.http
+    invoke:
+      throws: "Failed to check existing role assignments for user testuser@yourtenant.onmicrosoft.com: 400 Bad Request"
+
+  - name: subject not found - invalid principal ID during role assignment
+    steps:
+      - request:
+          method: POST
+          url: https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+        fixture: fixtures/200-oauth-token.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/users/testuser%40yourtenant.onmicrosoft.com
+        fixture: fixtures/200-user-exists.http
+      - request:
+          method: GET
+          url: https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?%24filter=principalId+eq+%27c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca%27+and+roleDefinitionId+eq+%2788d8e3e3-8f55-4a1e-953a-9b9898b8876b%27+and+directoryScopeId+eq+%27%2F%27
+        fixture: fixtures/400-subject-not-found.http
+    invoke:
+      throws: "Failed to check existing role assignments for user testuser@yourtenant.onmicrosoft.com: 400 Bad Request"

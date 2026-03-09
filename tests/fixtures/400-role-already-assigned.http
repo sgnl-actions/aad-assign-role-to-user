@@ -1,0 +1,22 @@
+HTTP/2 400 
+cache-control: no-cache
+content-type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+strict-transport-security: max-age=31536000
+request-id: 182da101-384e-4a24-a957-b4c5346df9d5
+client-request-id: 182da101-384e-4a24-a957-b4c5346df9d5
+x-ms-ags-diagnostic: {"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"MWH0EPF000C6E57"}}
+x-ms-resource-unit: 1
+odata-version: 4.0
+date: Wed, 05 Mar 2026 02:02:28 GMT
+
+{
+  "error": {
+    "code": "RoleAssignmentExists",
+    "message": "The Role assignment already exists.",
+    "innerError": {
+      "date": "2026-03-05T02:02:28",
+      "request-id": "182da101-384e-4a24-a957-b4c5346df9d5",
+      "client-request-id": "182da101-384e-4a24-a957-b4c5346df9d5"
+    }
+  }
+}

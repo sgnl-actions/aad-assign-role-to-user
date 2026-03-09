@@ -1,0 +1,22 @@
+HTTP/2 404 
+cache-control: no-cache
+content-type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+strict-transport-security: max-age=31536000
+request-id: 12345678-1234-1234-1234-123456789def
+client-request-id: 12345678-1234-1234-1234-123456789def
+x-ms-ags-diagnostic: {"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"MWH0EPF000C6E57"}}
+x-ms-resource-unit: 1
+odata-version: 4.0
+date: Wed, 05 Mar 2026 01:31:00 GMT
+
+{
+  "error": {
+    "code": "Request_ResourceNotFound", 
+    "message": "Resource 'testuser@yourtenant.onmicrosoft.com' does not exist or one of its queried reference-property objects are not present.",
+    "innerError": {
+      "date": "2026-03-05T01:31:00",
+      "request-id": "12345678-1234-1234-1234-123456789def",
+      "client-request-id": "12345678-1234-1234-1234-123456789def"
+    }
+  }
+}

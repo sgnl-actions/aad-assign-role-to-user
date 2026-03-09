@@ -1,0 +1,50 @@
+HTTP/2 200
+cache-control: no-cache
+content-type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+location: https://graph.microsoft.com
+strict-transport-security: max-age=31536000
+request-id: 947a02ed-4c5e-4ee2-8cc4-5f220a66d183
+client-request-id: 947a02ed-4c5e-4ee2-8cc4-5f220a66d183
+x-ms-ags-diagnostic: {"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"MWH0EPF000C6E57"}}
+x-ms-resource-unit: 1
+odata-version: 4.0
+date: Wed, 05 Mar 2026 01:48:57 GMT
+
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#roleManagement/directory/roleAssignmentScheduleRequests/$entity",
+  "id": "947a02ed-4c5e-4ee2-8cc4-5f220a66d183",
+  "status": "Provisioned",
+  "createdDateTime": "2026-03-05T01:48:56.4278212Z",
+  "completedDateTime": "2026-03-05T01:48:57.2968418Z",
+  "approvalId": null,
+  "customData": null,
+  "action": "adminAssign",
+  "principalId": "c9139ac2-cd61-4dd7-b96d-6f0c3bcd36ca",
+  "roleDefinitionId": "88d8e3e3-8f55-4a1e-953a-9b9898b8876b",
+  "directoryScopeId": "/",
+  "appScopeId": null,
+  "isValidationOnly": false,
+  "targetScheduleId": "947a02ed-4c5e-4ee2-8cc4-5f220a66d183",
+  "justification": "Approved by SGNL.ai",
+  "createdBy": {
+    "application": null,
+    "device": null,
+    "user": {
+      "displayName": "SGNL Actions",
+      "id": "ad82754e-db8b-4dcd-8a2f-fb44e92327a3"
+    }
+  },
+  "scheduleInfo": {
+    "startDateTime": "2026-03-05T01:48:57.2968418Z",
+    "recurrence": null,
+    "expiration": {
+      "type": "noExpiration",
+      "endDateTime": null,
+      "duration": null
+    }
+  },
+  "ticketInfo": {
+    "ticketNumber": null,
+    "ticketSystem": null
+  }
+}

@@ -5,6 +5,5 @@ export default {
     '**/tests/**/*.test.js',
     '**/tests/**/*.test.mjs'
   ],
-  moduleFileExtensions: ['js', 'mjs', 'json'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
+  moduleFileExtensions: ['js', 'mjs', 'json']
 };
