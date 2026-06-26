@@ -71,3 +71,47 @@ outputs:
   address:
     type: text
     description: The Azure AD API base URL used
+
+environment:
+  ADDRESS:
+    type: text
+    description: Azure AD API base URL
+    required: false
+  OAUTH2_CLIENT_CREDENTIALS_AUDIENCE:
+    type: text
+    description: OAuth2 client credentials audience
+    required: false
+  OAUTH2_CLIENT_CREDENTIALS_AUTH_STYLE:
+    type: text
+    description: OAuth2 client credentials auth style
+    required: false
+  OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID:
+    type: text
+    description: OAuth2 client credentials client ID
+    required: false
+  OAUTH2_CLIENT_CREDENTIALS_SCOPE:
+    type: text
+    description: OAuth2 client credentials scope
+    required: false
+  OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL:
+    type: text
+    description: OAuth2 client credentials token URL
+    required: false
+
+secrets:
+  OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET:
+    type: text
+    description: OAuth2 client secret
+    required: false
+  OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN:
+    type: text
+    description: OAuth2 authorization code access token
+    required: false
+
+requires_one_of:
+  - [
+      "secrets.OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET",
+      "environment.OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID",
+      "environment.OAUTH2_CLIENT_CREDENTIALS_TOKEN_URL",
+    ]
+  - ["secrets.OAUTH2_AUTHORIZATION_CODE_ACCESS_TOKEN"]
