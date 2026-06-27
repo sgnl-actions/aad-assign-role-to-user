@@ -108,7 +108,7 @@ secrets:
     description: OAuth2 authorization code access token
     required: false
 
-requires_one_of:
+optional_one_of:
   - [
       "secrets.OAUTH2_CLIENT_CREDENTIALS_CLIENT_SECRET",
       "environment.OAUTH2_CLIENT_CREDENTIALS_CLIENT_ID",
